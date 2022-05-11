@@ -7,7 +7,7 @@ from sc2.ids.unit_typeid import UnitTypeId
 
 class ProBot(BotAI):
     async def on_step(self, iteration: int):
-        print(iteration)
-
+        if self.townhalls.amount == 0 and self.can_afford(UnitTypeId.NEXUS) :
+            self.expand_now()
 
 run_game(maps.get("AcropolisLE"),[Bot(Race.Protoss, ProBot()), Computer(Race.Zerg, Difficulty.Hard)], realtime=False)
