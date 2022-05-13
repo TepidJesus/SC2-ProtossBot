@@ -7,12 +7,16 @@ from sc2.ids.unit_typeid import UnitTypeId
 import numpy as np
 import cv2
 import math
+from sc2.position import Point2
 
 class ProBot(BotAI):
     async def on_step(self, iteration: int):
         if self.townhalls.amount == 0 and self.can_afford(UnitTypeId.NEXUS) :
             self.expand_now()
 
+        if iteration % 250 == 0:
+            probe = self.units.random
+            probe.attack(self.enemy_start_locations[0])
         map = np.zeros((self.game_info.map_size[0], self.game_info.map_size[1], 3), dtype=np.uint8)
 
         for mineral in self.mineral_field:
@@ -43,17 +47,21 @@ class ProBot(BotAI):
             fraction = enemy_structure.health / enemy_structure.health_max if enemy_structure.health_max > 0 else 0.0001
             map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
 
-        for our_structure in self.structures:
-            if our_structure.type_id == UnitTypeId.NEXUS:
-                pos = our_structure.position
+        for friendly_structure in self.structures:
+            pos = friendly_structure.position
+            for x in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
+                    for y in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
+                        if self.is_visible(Point2([pos.x + x,pos.y + y])):
+                            c1 = [128, 128, 128]
+                            map[math.ceil(pos.y + y)][math.ceil(pos.x + x)] = [int(i) for i in c1]
+            if friendly_structure.type_id == UnitTypeId.NEXUS:
                 c = [255, 255, 175]
-                fraction = our_structure.health / our_structure.health_max if our_structure.health_max > 0 else 0.0001
+                fraction = friendly_structure.health / friendly_structure.health_max if friendly_structure.health_max > 0 else 0.0001
                 map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
             
             else:
-                pos = our_structure.position
                 c = [0, 255, 175]
-                fraction = our_structure.health / our_structure.health_max if our_structure.health_max > 0 else 0.0001
+                fraction = friendly_structure.health / friendly_structure.health_max if friendly_structure.health_max > 0 else 0.0001
                 map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
 
         for vespene in self.vespene_geyser:
@@ -66,12 +74,16 @@ class ProBot(BotAI):
             else:
                 map[math.ceil(pos.y)][math.ceil(pos.x)] = [50,20,75]
 
-        for our_unit in self.units:
-            pos = our_unit.position
+        for friendly_unit in self.units:
+            pos = friendly_unit.position
+            for x in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
+                    for y in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
+                        if self.is_visible(Point2([pos.x + x,pos.y + y])):
+                            c1 = [128, 128, 128]
+                            map[math.ceil(pos.y + y)][math.ceil(pos.x + x)] = [int(i) for i in c1]
             c = [175, 255, 0]
-            fraction = our_unit.health / our_unit.health_max if our_unit.health_max > 0 else 0.0001
+            fraction = friendly_unit.health / friendly_unit.health_max if friendly_unit.health_max > 0 else 0.0001
             map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
-
 
         cv2.imshow('map',cv2.flip(cv2.resize(map, None, fx=4, fy=4, interpolation=cv2.INTER_NEAREST), 0))
         cv2.waitKey(1)
