@@ -13,8 +13,10 @@ class ProBot(BotAI):
     async def on_step(self, iteration: int):
         if self.townhalls.amount == 0 and self.can_afford(UnitTypeId.NEXUS) :
             self.expand_now()
+        await self.distribute_workers()
+        
+        #### MAPPING ####
         map = np.zeros((self.game_info.map_size[0], self.game_info.map_size[1], 3), dtype=np.uint8)
-
         for mineral in self.mineral_field:
             pos = mineral.position
             c = [175, 255, 255]
