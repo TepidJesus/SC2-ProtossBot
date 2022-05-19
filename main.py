@@ -13,10 +13,6 @@ class ProBot(BotAI):
     async def on_step(self, iteration: int):
         if self.townhalls.amount == 0 and self.can_afford(UnitTypeId.NEXUS) :
             self.expand_now()
-
-        if iteration % 250 == 0:
-            probe = self.units.random
-            probe.attack(self.enemy_start_locations[0])
         map = np.zeros((self.game_info.map_size[0], self.game_info.map_size[1], 3), dtype=np.uint8)
 
         for mineral in self.mineral_field:
@@ -84,7 +80,7 @@ class ProBot(BotAI):
             fraction = friendly_unit.health / friendly_unit.health_max if friendly_unit.health_max > 0 else 0.0001
             map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
 
-        cv2.imshow('map',cv2.flip(cv2.resize(map, None, fx=4, fy=4, interpolation=cv2.INTER_NEAREST), 0))
+        cv2.imshow('map', cv2.flip(cv2.resize(map, None, fx=4, fy=4, interpolation=cv2.INTER_NEAREST), 0))
         cv2.waitKey(1)
 
 run_game(maps.get("AcropolisLE"),[Bot(Race.Protoss, ProBot()), Computer(Race.Zerg, Difficulty.Hard)], realtime=False)
