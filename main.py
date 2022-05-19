@@ -24,15 +24,31 @@ class ProBot(BotAI):
             c = [175, 255, 255]
             fraction = mineral.mineral_contents / 1800
             if mineral.is_visible:
-                map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
+                map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c] 
             else:
-                map[math.ceil(pos.y)][math.ceil(pos.x)] = [20,75,50]  
-
+                map[math.ceil(pos.y)][math.ceil(pos.x)] = [20, 75, 50]  
 
         for enemy_start_location in self.enemy_start_locations:
             pos = enemy_start_location
             c = [0, 0, 255]
             map[math.ceil(pos.y)][math.ceil(pos.x)] = c
+
+        for friendly_structure in self.structures:
+            pos = friendly_structure.position
+            for x in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
+                    for y in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
+                        if self.is_visible(Point2([pos.x + x,pos.y + y])) and (map[math.ceil(pos.y + y)][math.ceil(pos.x + x)]).tolist() == [0, 0, 0]:
+                            c1 = [100, 100, 100]
+                            map[math.ceil(pos.y + y)][math.ceil(pos.x + x)] = c1
+            if friendly_structure.type_id == UnitTypeId.NEXUS:
+                c = [255, 255, 175]
+                fraction = friendly_structure.health / friendly_structure.health_max if friendly_structure.health_max > 0 else 0.0001
+                map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
+            
+            else:
+                c = [0, 255, 175]
+                fraction = friendly_structure.health / friendly_structure.health_max if friendly_structure.health_max > 0 else 0.0001
+                map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
 
         for enemy_unit in self.enemy_units:
             pos = enemy_unit.position
@@ -46,23 +62,6 @@ class ProBot(BotAI):
             c = [0, 100, 255]
             fraction = enemy_structure.health / enemy_structure.health_max if enemy_structure.health_max > 0 else 0.0001
             map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
-
-        for friendly_structure in self.structures:
-            pos = friendly_structure.position
-            for x in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
-                    for y in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
-                        if self.is_visible(Point2([pos.x + x,pos.y + y])):
-                            c1 = [128, 128, 128]
-                            map[math.ceil(pos.y + y)][math.ceil(pos.x + x)] = [int(i) for i in c1]
-            if friendly_structure.type_id == UnitTypeId.NEXUS:
-                c = [255, 255, 175]
-                fraction = friendly_structure.health / friendly_structure.health_max if friendly_structure.health_max > 0 else 0.0001
-                map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
-            
-            else:
-                c = [0, 255, 175]
-                fraction = friendly_structure.health / friendly_structure.health_max if friendly_structure.health_max > 0 else 0.0001
-                map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
 
         for vespene in self.vespene_geyser:
             pos = vespene.position
@@ -78,9 +77,9 @@ class ProBot(BotAI):
             pos = friendly_unit.position
             for x in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
                     for y in range(math.floor(-friendly_structure.sight_range), math.ceil(friendly_structure.sight_range) + 1):
-                        if self.is_visible(Point2([pos.x + x,pos.y + y])):
-                            c1 = [128, 128, 128]
-                            map[math.ceil(pos.y + y)][math.ceil(pos.x + x)] = [int(i) for i in c1]
+                        if self.is_visible(Point2([pos.x + x,pos.y + y])) and (map[math.ceil(pos.y + y)][math.ceil(pos.x + x)]).tolist() == [0, 0, 0]:
+                            c1 = [100, 100, 100]
+                            map[math.ceil(pos.y + y)][math.ceil(pos.x + x)] = c1
             c = [175, 255, 0]
             fraction = friendly_unit.health / friendly_unit.health_max if friendly_unit.health_max > 0 else 0.0001
             map[math.ceil(pos.y)][math.ceil(pos.x)] = [int(fraction*i) for i in c]
