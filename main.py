@@ -9,12 +9,33 @@ import cv2
 import math
 from sc2.position import Point2
 
+
+
+
+
+
 class ProBot(BotAI):
-    async def on_step(self, iteration: int):
-        if self.townhalls.amount == 0 and self.can_afford(UnitTypeId.NEXUS) :
+
+    async def build_order(self): ### Commences Next Stage of Build Path
+        if self.supply_used < 13:
+            if self.can_afford(UnitTypeId.PROBE):
+                nex = self.townhalls.first
+                nex.train(UnitTypeId.PROBE)
+        elif self.supply_used == 13:
+            if self.structures(UnitTypeId.PYLON).amount < 1:
+                nat = await self.get_next_expansion()
+                if self.can_afford(UnitTypeId.PYLON) and not self.already_pending(UnitTypeId.PYLON):
+                    await self.build(UnitTypeId.PYLON, near=nat)
+        elif self.supply_used == 16:
             self.expand_now()
+
+            
+    async def on_step(self, iteration: int):
         await self.distribute_workers()
         
+        await self.build_order()
+
+
         #### MAPPING ####
         map = np.zeros((self.game_info.map_size[0], self.game_info.map_size[1], 3), dtype=np.uint8)
         for mineral in self.mineral_field:
