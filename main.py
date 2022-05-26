@@ -21,13 +21,27 @@ class ProBot(BotAI):
             if self.can_afford(UnitTypeId.PROBE):
                 nex = self.townhalls.first
                 nex.train(UnitTypeId.PROBE)
-        elif self.supply_used == 13:
+        elif self.supply_used <= 15:
             if self.structures(UnitTypeId.PYLON).amount < 1:
                 nat = await self.get_next_expansion()
                 if self.can_afford(UnitTypeId.PYLON) and not self.already_pending(UnitTypeId.PYLON):
-                    await self.build(UnitTypeId.PYLON, near=nat)
-        elif self.supply_used == 16:
-            self.expand_now()
+                    await self.build(UnitTypeId.PYLON, near=nat.towards(self.game_info.map_center, distance=6))
+            if not self.already_pending(UnitTypeId.PROBE):
+                nex = self.townhalls.first
+                nex.train(UnitTypeId.PROBE)            
+        elif self.supply_used <= 16:
+            if self.can_afford(UnitTypeId.WARPGATE):
+                nat_plyon = self.structures(UnitTypeId.PYLON).furthest_to(self.townhalls.first)
+                await self.build(UnitTypeId.WARPGATE, near= nat_plyon.position.towards(self.game_info.map_center, distance=6))
+                if not self.already_pending(UnitTypeId.PROBE):
+                    nex = self.townhalls.first
+                    nex.train(UnitTypeId.PROBE)
+        elif self.supply_used <= 17:
+            if self.can_afford(UnitTypeId.ASSIMILATOR) and self.structures(UnitTypeId.ASSIMILATOR).amount < 1:
+                gysers = self.vespene_geyser.closer_than(20, self.townhalls.first)
+                await self.build(UnitTypeId.ASSIMILATOR, gysers[0])
+        elif self.supply_used <= 20 and self.townhalls.amount < 2:
+            await self.expand_now()
 
             
     async def on_step(self, iteration: int):
